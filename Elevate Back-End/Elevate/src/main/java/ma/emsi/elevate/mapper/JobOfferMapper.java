@@ -13,7 +13,7 @@ public class JobOfferMapper {
             return null;
         }
 
-        return JobOffer.Builder()
+        return JobOffer.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .location(request.getLocation())

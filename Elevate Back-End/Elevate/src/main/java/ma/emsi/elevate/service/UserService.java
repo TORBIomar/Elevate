@@ -3,7 +3,6 @@ package ma.emsi.elevate.service;
 import ma.emsi.elevate.model.User;
 import ma.emsi.elevate.model.UserRole;
 import ma.emsi.elevate.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,11 +16,13 @@ import java.util.Optional;
 @Service
 public class UserService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -32,7 +33,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User registerUser(String email, String password, String firstName, String lastName,
-                            String phoneNumber, String roleStr) {
+                             String phoneNumber, String roleStr) {
         if (userRepository.existsByEmail(email)) {
             throw new RuntimeException("Email already registered");
         }
@@ -76,10 +77,18 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (firstName != null) user.setFirstName(firstName);
-        if (lastName != null) user.setLastName(lastName);
-        if (phoneNumber != null) user.setPhoneNumber(phoneNumber);
-        if (profilePictureUrl != null) user.setProfilePictureUrl(profilePictureUrl);
+        if (firstName != null) {
+            user.setFirstName(firstName);
+        }
+        if (lastName != null) {
+            user.setLastName(lastName);
+        }
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber);
+        }
+        if (profilePictureUrl != null) {
+            user.setProfilePictureUrl(profilePictureUrl);
+        }
 
         return userRepository.save(user);
     }
@@ -100,4 +109,3 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 }
-

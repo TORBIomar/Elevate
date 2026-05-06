@@ -1,26 +1,57 @@
-# --- Root ---
+# --- OS files ---
 .DS_Store
+Thumbs.db
+
+# --- IDE / Editor ---
 .idea/
 .vscode/
 *.swp
 *.swo
 *.suo
+*.iws
+*.iml
+*.ipr
 
-# --- Backend (Maven/Spring) ---
+# ========================
+# BACKEND (Maven/Spring)
+# ========================
 **/target/
 **/.mvn/wrapper/maven-wrapper.jar
 **/uploads/
 *.log
 
-# --- Frontend (React/Vite) ---
+# Backend docs/notes (non-essential)
+**/MODULE_*.md
+**/QUICK_REFERENCE.md
+**/HELP.md
+**/COMPLETION_SUMMARY.md
+**/PROJECT_STATUS.md
+**/MODULE_*_README.md
+**/MODULE_*_TESTING.md
+
+# ========================
+# FRONTEND (React/Vite)
+# ========================
 **/node_modules/
 **/dist/
 **/dist-ssr/
 **/*.local
+
+# Vite boilerplate assets (non-essential)
+**/src/assets/react.svg
+**/src/assets/vite.svg
+**/src/vite-env.d.ts
+
+# Lock files (optional — remove if you want reproducible installs)
+**/package-lock.json
+
+# Local error/debug files
 **/error.json
 **/register_error.txt
 
-# Environment files
+# ========================
+# ENVIRONMENT
+# ========================
 .env
 .env.local
 .env.development.local

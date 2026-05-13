@@ -13,6 +13,7 @@ import {
   ChevronDown,
   CalendarIcon,
   FileText,
+  Bookmark,
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 
@@ -43,18 +44,19 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname.startsWith(path);
 
   const navLinks = [
-    { to: '/jobs', label: 'Job Board', icon: <Search className="w-4 h-4" /> },
+    ...(user?.role !== 'RECRUITER' 
+      ? [{ to: '/jobs', label: 'Job Board', icon: <Search className="w-4 h-4" /> }] 
+      : []),
     ...(user?.role === 'RECRUITER'
       ? [
           { to: '/recruiter/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
           { to: '/recruiter/interviews', label: 'Interviews', icon: <CalendarIcon className="w-4 h-4" /> },
-          { to: '/recruiter/offers', label: 'My Offers', icon: <Briefcase className="w-4 h-4" /> },
-          { to: '/recruiter/offers/new', label: 'Post Job', icon: <Plus className="w-4 h-4" /> },
         ]
       : user?.role === 'CANDIDATE' 
       ? [
           { to: '/my-applications', label: 'My Applications', icon: <FileText className="w-4 h-4" /> },
           { to: '/my-interviews', label: 'My Interviews', icon: <CalendarIcon className="w-4 h-4" /> },
+          { to: '/my-saved-jobs', label: 'Saved Jobs', icon: <Bookmark className="w-4 h-4" /> },
       ] : []),
   ];
 

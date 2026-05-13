@@ -26,7 +26,7 @@ public class JobOfferServiceImpl implements JobOfferService {
     @Autowired
     private JobOfferMapper jobOfferMapper;
 
-    @Override
+@Override
     public JobOfferResponse createJobOffer(JobOfferRequest request, String recruiterEmail) {
         User recruiter = userRepository.findByEmail(recruiterEmail)
                 .orElseThrow(() -> new RuntimeException("Recruiter not found"));
@@ -38,7 +38,7 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(savedOffer);
     }
 
-    @Override
+@Override
     public JobOfferResponse updateJobOffer(Long id, JobOfferRequest request, String recruiterEmail) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job offer not found"));
@@ -57,7 +57,7 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(jobOfferRepository.save(jobOffer));
     }
 
-    @Override
+@Override
     public void deleteJobOffer(Long id, String recruiterEmail) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job offer not found"));
@@ -69,7 +69,7 @@ public class JobOfferServiceImpl implements JobOfferService {
         jobOfferRepository.delete(jobOffer);
     }
 
-    @Override
+@Override
     @Transactional(readOnly = true)
     public JobOfferResponse getJobOfferById(Long id) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
@@ -77,7 +77,7 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(jobOffer);
     }
 
-    @Override
+@Override
     @Transactional(readOnly = true)
     public Page<JobOfferResponse> searchJobOffers(String keyword, String category, Pageable pageable) {
         return jobOfferRepository.searchOffers(keyword, category, pageable)
@@ -91,4 +91,3 @@ public class JobOfferServiceImpl implements JobOfferService {
                 .map(jobOfferMapper::toResponse);
     }
 }
-

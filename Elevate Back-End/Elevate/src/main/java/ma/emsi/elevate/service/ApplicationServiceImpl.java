@@ -33,11 +33,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private final String UPLOAD_DIR = "uploads/";
 
-    @Override
+@Override
     public ApplicationResponse applyForJob(Long jobId, String username, MultipartFile cv, MultipartFile coverLetter) {
         User candidate = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         JobOffer job = jobOfferRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
@@ -51,12 +51,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .cvUrl(cvUrl)
                 .coverLetterUrl(clUrl)
                 .build();
-                
+
         Application saved = applicationRepository.save(app);
         return mapToResponse(saved);
     }
 
-    @Override
+@Override
     public Page<ApplicationResponse> getMyApplications(String username, Pageable pageable) {
         User candidate = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -64,19 +64,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .map(this::mapToResponse);
     }
 
-    @Override
+@Override
     public Page<ApplicationResponse> getApplicationsForJob(Long jobId, String username, Pageable pageable) {
         User recruiter = userRepository.findByEmail(username).orElseThrow();
         JobOffer jobOffer = jobOfferRepository.findById(jobId).orElseThrow();
-        
+
         if(!jobOffer.getRecruiter().getId().equals(recruiter.getId())) {
              throw new RuntimeException("Unauthorized");
         }
-        
+
         return applicationRepository.findByJobOfferId(jobId, pageable).map(this::mapToResponse);
     }
 
-    @Override
+@Override
     public ApplicationResponse updateApplicationStatus(Long applicationId, ApplicationStatus status, String username) {
         Application app = applicationRepository.findById(applicationId).orElseThrow();
         User recruiter = userRepository.findByEmail(username).orElseThrow();
@@ -119,5 +119,24 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .coverLetterUrl(app.getCoverLetterUrl())
                 .appliedAt(app.getAppliedAt())
                 .build();
+    }
+
+@Override
+    public void deleteApplication(Long id, String username) {
+        Application app = applicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Application not found"));
+        
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Allow deletion if user is the candidate OR if user is the recruiter who owns the job
+        boolean isCandidate = app.getCandidate().getId().equals(user.getId());
+        boolean isRecruiter = app.getJobOffer().getRecruiter().getId().equals(user.getId());
+
+        if (!isCandidate && !isRecruiter) {
+            throw new RuntimeException("Unauthorized to delete this application");
+        }
+
+        applicationRepository.delete(app);
     }
 }

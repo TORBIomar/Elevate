@@ -19,7 +19,6 @@ import JobDetailsPage from './pages/jobs/JobDetailsPage';
 
 // Recruiter Pages
 import RecruiterDashboardPage from './pages/recruiter/RecruiterDashboardPage';
-import MyOffersPage from './pages/recruiter/MyOffersPage';
 import JobOfferFormPage from './pages/recruiter/JobOfferFormPage';
 import ApplicationManagerPage from './pages/recruiter/ApplicationManagerPage';
 import RecruiterInterviewsPage from './pages/recruiter/RecruiterInterviewsPage';
@@ -27,6 +26,7 @@ import RecruiterInterviewsPage from './pages/recruiter/RecruiterInterviewsPage';
 // Candidate Pages
 import MyApplicationsPage from './pages/candidate/MyApplicationsPage';
 import MyInterviewsPage from './pages/candidate/MyInterviewsPage';
+import MySavedJobsPage from './pages/candidate/MySavedJobsPage';
 
 // Profile
 import ProfilePage from './pages/profile/ProfilePage';
@@ -50,8 +50,17 @@ export default function App() {
               </PrivateRoute>
             }
           >
-            {/* Job Board (all authenticated users) */}
-            <Route path="/jobs" element={<JobBoardPage />} />
+            {/* Job Board (Candidates only) */}
+            <Route
+              path="/jobs"
+              element={
+                <RoleRoute allowedRoles={['CANDIDATE']}>
+                  <JobBoardPage />
+                </RoleRoute>
+              }
+            />
+            
+            {/* Job Details (Available to both to preview jobs) */}
             <Route path="/jobs/:id" element={<JobDetailsPage />} />
 
             {/* Profile */}
@@ -74,6 +83,14 @@ export default function App() {
                 </RoleRoute>
               }
             />
+            <Route
+              path="/my-saved-jobs"
+              element={
+                <RoleRoute allowedRoles={['CANDIDATE']}>
+                  <MySavedJobsPage />
+                </RoleRoute>
+              }
+            />
 
             {/* Recruiter-only routes */}
             <Route
@@ -86,11 +103,7 @@ export default function App() {
             />
             <Route
               path="/recruiter/offers"
-              element={
-                <RoleRoute allowedRoles={['RECRUITER', 'ADMIN']}>
-                  <MyOffersPage />
-                </RoleRoute>
-              }
+              element={<Navigate to="/recruiter/dashboard" replace />}
             />
             <Route
               path="/recruiter/offers/new"

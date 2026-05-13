@@ -20,6 +20,9 @@ export default function RoleRoute({ children, allowedRoles }: RoleRouteProps) {
   }
 
   if (!user || !allowedRoles.includes(user.role as UserRole)) {
+    if (user?.role === 'RECRUITER' || user?.role === 'ADMIN') {
+      return <Navigate to="/recruiter/dashboard" replace />;
+    }
     return <Navigate to="/jobs" replace />;
   }
 

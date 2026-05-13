@@ -30,8 +30,17 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      await login({ email, password });
-      navigate(from, { replace: true });
+      const loggedUser = await login({ email, password });
+      
+      if (from === '/jobs') {
+        if (loggedUser.role === 'RECRUITER' || loggedUser.role === 'ADMIN') {
+          navigate('/recruiter/dashboard', { replace: true });
+        } else {
+          navigate('/jobs', { replace: true });
+        }
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; details?: string } } };
       setError(

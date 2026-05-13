@@ -38,4 +38,41 @@ export const applicationService = {
     const response = await api.patch<ApplicationResponse>(`${APPLICATIONS_BASE}/${applicationId}/status?status=${status}`);
     return response.data;
   },
+
+  checkApplicationStatus: async (jobId: number): Promise<boolean> => {
+    // Check if the user has already applied for this job
+    const response = await applicationService.getMyApplications(0, 100);
+    return response.content.some((app) => app.jobOfferId === jobId);
+  },
+
+  withdrawApplication: async (applicationId: number): Promise<void> => {
+    await api.delete(`${APPLICATIONS_BASE}/${applicationId}`);
+  },
+
+  downloadResume: async (cvUrl: string, filename: string = 'resume.pdf'): Promise<void> => {
+    const urlPath = cvUrl.startsWith('http') ? cvUrl : `/uploads/${cvUrl}`;
+    const response = await api.get(urlPath, { responseType: 'blob' });
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+
+  viewResume: async (cvUrl: string): Promise<void> => {
+    const urlPath = cvUrl.startsWith('http') ? cvUrl : `/uploads/${cvUrl}`;
+    const response = await api.get(urlPath, { responseType: 'blob' });
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    
+    // Revoke the URL after a delay to ensure the new tab has time to load it
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+    }, 10000);
+  },
 };

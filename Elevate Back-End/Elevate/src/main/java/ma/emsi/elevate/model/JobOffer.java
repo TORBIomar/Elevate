@@ -6,15 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * Entité représentant une offre d'emploi publiée par un recruteur sur la plateforme Elevate.
- *
- * <p>Une offre d'emploi est créée par un recruteur et peut recevoir des candidatures de la part
- * des utilisateurs ayant le rôle {@code CANDIDATE}.</p>
- *
- * <p>La table associée en base de données est {@code job_offers}.</p>
- */
 @Entity
 @Table(name = "job_offers")
 @Data
@@ -23,49 +17,39 @@ import java.time.LocalDateTime;
 @Builder
 public class JobOffer {
 
-    /** Identifiant unique généré automatiquement. */
-    @Id
+@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Intitulé du poste proposé. */
-    @Column(nullable = false)
+@Column(nullable = false)
     private String title;
 
-    /** Description détaillée du poste et des missions. */
-    @Column(columnDefinition = "TEXT", nullable = false)
+@Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
-    /** Lieu de travail (ville, région ou "Télétravail"). */
-    @Column(nullable = false)
+@Column(nullable = false)
     private String location;
 
-    /**
-     * Type de contrat proposé.
-     * Valeurs possibles : {@code FULL_TIME}, {@code PART_TIME}, {@code CONTRACT}, {@code INTERNSHIP}.
-     */
-    @Column(nullable = false)
+@Column(nullable = false)
     private String jobType;
 
-    /** Catégorie ou domaine d'activité de l'offre (ex. : Informatique, Finance, etc.). */
-    @Column(nullable = false)
+@Column(nullable = false)
     private String category;
 
-    /** Salaire proposé (en unité monétaire locale). */
-    @Column(nullable = false)
+@Column(nullable = false)
     private Double salary;
 
-    /** Recruteur propriétaire de l'offre d'emploi (relation Many-to-One vers {@link User}). */
-    @ManyToOne(fetch = FetchType.LAZY)
+@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiter_id", nullable = false)
     private User recruiter;
 
-    /** Date et heure de création de l'offre (remplie automatiquement par Hibernate). */
-    @CreationTimestamp
+@CreationTimestamp
     private LocalDateTime createdAt;
 
-    /** Date et heure de la dernière modification de l'offre (mise à jour automatiquement par Hibernate). */
-    @UpdateTimestamp
+@UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "jobOffer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Application> applications = new ArrayList<>();
 }
 

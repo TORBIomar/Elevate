@@ -10,7 +10,7 @@ import StatusBadge from '../../components/ui/StatusBadge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
-import { FileText, ArrowLeft, Calendar, Video, Download, CheckCircle2 } from 'lucide-react';
+import { FileText, ArrowLeft, Calendar, Video, Download, Eye, CheckCircle2, Trash2, UserX } from 'lucide-react';
 
 export default function ApplicationManagerPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +18,7 @@ export default function ApplicationManagerPage() {
   const [applications, setApplications] = useState<Page<ApplicationResponse> | null>(null);
   const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
 
   // Interview Modal State
   const [isInterviewModalOpen, setIsInterviewModalOpen] = useState(false);
@@ -26,6 +27,15 @@ export default function ApplicationManagerPage() {
   const [interviewTime, setInterviewTime] = useState('');
   const [interviewLink, setInterviewLink] = useState('');
   const [isScheduling, setIsScheduling] = useState(false);
+
+  // Fire Modal State
+  const [isFireModalOpen, setIsFireModalOpen] = useState(false);
+  const [appToFire, setAppToFire] = useState<ApplicationResponse | null>(null);
+
+  // Delete Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [appToDelete, setAppToDelete] = useState<ApplicationResponse | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchApplicationsAndJob = useCallback(async () => {
     if (!id) return;
@@ -51,10 +61,11 @@ export default function ApplicationManagerPage() {
   const handleStatusChange = async (appId: number, status: ApplicationStatus) => {
     try {
       await applicationService.updateApplicationStatus(appId, status);
+      setPageError('');
       fetchApplicationsAndJob(); // Refresh
     } catch (err) {
       console.error('Failed to update status:', err);
-      alert('Failed to update application status.');
+      setPageError('Failed to update application status.');
     }
   };
 
@@ -71,10 +82,11 @@ export default function ApplicationManagerPage() {
         interviewLinkOrLocation: interviewLink
       });
       setIsInterviewModalOpen(false);
+      setPageError('');
       fetchApplicationsAndJob(); // Refresh
     } catch (err) {
       console.error('Failed to schedule interview:', err);
-      alert('Failed to schedule interview.');
+      setPageError('Failed to schedule interview.');
     } finally {
       setIsScheduling(false);
     }
@@ -87,6 +99,39 @@ export default function ApplicationManagerPage() {
     setInterviewTime('');
     setInterviewLink('');
     setIsInterviewModalOpen(true);
+  };
+
+  const handleFireConfirm = async () => {
+    if (!appToFire) return;
+    try {
+      await applicationService.updateApplicationStatus(appToFire.id, 'REJECTED');
+      setIsFireModalOpen(false);
+      setAppToFire(null);
+      setPageError('');
+      fetchApplicationsAndJob(); // Refresh
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      setPageError('Failed to fire employee. Please ensure the backend server was restarted.');
+      setIsFireModalOpen(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!appToDelete) return;
+    setIsDeleting(true);
+    try {
+      await applicationService.withdrawApplication(appToDelete.id); // This calls DELETE /api/applications/:id
+      setIsDeleteModalOpen(false);
+      setAppToDelete(null);
+      setPageError('');
+      fetchApplicationsAndJob(); // Refresh
+    } catch (err) {
+      console.error('Failed to delete application:', err);
+      setPageError('Failed to delete application. Please ensure the backend server was restarted and compiled with the new changes.');
+      setIsDeleteModalOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -104,10 +149,19 @@ export default function ApplicationManagerPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-surface-100 flex items-center gap-3">
           <FileText className="w-8 h-8 text-primary-500" />
-          Application Manager
+          Employees & Applicants
         </h1>
-        <p className="text-surface-400 mt-1">Viewing applicants for: <strong className="text-surface-200">{job?.title}</strong></p>
+        <p className="text-surface-400 mt-1">Viewing employees and applicants for: <strong className="text-surface-200">{job?.title}</strong></p>
       </div>
+
+      {pageError && (
+        <div className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400 animate-slide-down flex justify-between items-center">
+          <span>{pageError}</span>
+          <button onClick={() => setPageError('')} className="text-red-400 hover:text-red-300">
+            &times;
+          </button>
+        </div>
+      )}
 
       <div className="bg-surface-900 border border-surface-800 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
@@ -126,7 +180,11 @@ export default function ApplicationManagerPage() {
                 <tr key={app.id} className={`transition-colors ${app.status === 'ACCEPTED' ? 'bg-emerald-500/5 hover:bg-emerald-500/10 border-l-2 border-emerald-500' : 'hover:bg-surface-800/30'}`}>
                   <td className="px-6 py-4 font-medium text-surface-100 whitespace-nowrap flex items-center gap-2">
                     {app.candidateName}
-                    {app.status === 'ACCEPTED' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                    {app.status === 'ACCEPTED' && (
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        <CheckCircle2 className="w-3 h-3" /> Employee
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(app.appliedAt).toLocaleDateString()}
@@ -137,35 +195,91 @@ export default function ApplicationManagerPage() {
                   <td className="px-6 py-4">
                     <div className="flex gap-3">
                       {app.cvUrl && (
-                        <a href={app.cvUrl} target="_blank" rel="noreferrer" className="text-primary-400 hover:text-primary-300 flex items-center gap-1 transition-colors">
-                           <Download className="w-4 h-4" /> CV
-                        </a>
+                        <div className="flex items-center gap-1 bg-primary-500/10 rounded-lg px-2 py-1">
+                          <button 
+                            onClick={() => applicationService.viewResume(app.cvUrl!)} 
+                            className="text-primary-400 hover:text-primary-300 flex items-center gap-1 transition-colors p-1"
+                            title="Preview CV"
+                          >
+                             <Eye className="w-4 h-4" /> CV
+                          </button>
+                          <span className="text-primary-500/30">|</span>
+                          <button 
+                            onClick={() => applicationService.downloadResume(app.cvUrl!, `cv_${app.candidateName}.pdf`)} 
+                            className="text-primary-400 hover:text-primary-300 flex items-center gap-1 transition-colors p-1"
+                            title="Download CV"
+                          >
+                             <Download className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                       {app.coverLetterUrl && (
-                        <a href={app.coverLetterUrl} target="_blank" rel="noreferrer" className="text-surface-400 hover:text-surface-300 flex items-center gap-1 transition-colors">
-                           <Download className="w-4 h-4" /> Cover Letter
-                        </a>
+                        <div className="flex items-center gap-1 bg-surface-700/30 rounded-lg px-2 py-1">
+                          <button 
+                            onClick={() => applicationService.viewResume(app.coverLetterUrl!)} 
+                            className="text-surface-400 hover:text-surface-300 flex items-center gap-1 transition-colors p-1"
+                            title="Preview Cover Letter"
+                          >
+                             <Eye className="w-4 h-4" /> Cover Letter
+                          </button>
+                          <span className="text-surface-500/30">|</span>
+                          <button 
+                            onClick={() => applicationService.downloadResume(app.coverLetterUrl!, `cover_letter_${app.candidateName}.pdf`)} 
+                            className="text-surface-400 hover:text-surface-300 flex items-center gap-1 transition-colors p-1"
+                            title="Download Cover Letter"
+                          >
+                             <Download className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex items-center justify-end gap-2">
-                       <select
-                         className="bg-surface-800 border border-surface-700 text-surface-200 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2"
-                         value={app.status}
-                         onChange={(e) => handleStatusChange(app.id, e.target.value as ApplicationStatus)}
-                       >
-                         <option value="PENDING">Pending</option>
-                         <option value="REVIEWING">Reviewing</option>
-                         <option value="ACCEPTED">Accepted</option>
-                         <option value="REJECTED">Rejected</option>
-                         <option value="INTERVIEW_SCHEDULED" disabled>Interview Scheduled</option>
-                       </select>
-                       
-                       {app.status !== 'INTERVIEW_SCHEDULED' && app.status !== 'REJECTED' && (
-                         <Button size="sm" onClick={() => openInterviewModal(app)}>
-                           Schedule Interview
+                       {app.status === 'ACCEPTED' ? (
+                         <Button 
+                           variant="ghost" 
+                           className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 hover:text-red-400"
+                           onClick={() => {
+                             setAppToFire(app);
+                             setIsFireModalOpen(true);
+                           }}
+                         >
+                           Fire Employee
                          </Button>
+                       ) : (
+                         <>
+                           <select
+                             className="text-xs rounded-lg block p-2 outline-none focus:ring-2 transition-all bg-surface-800 border border-surface-700 text-surface-200 focus:ring-primary-500 focus:border-primary-500"
+                             value={app.status}
+                             onChange={(e) => handleStatusChange(app.id, e.target.value as ApplicationStatus)}
+                           >
+                             <option value="PENDING">Pending</option>
+                             <option value="REVIEWING">Reviewing</option>
+                             <option value="ACCEPTED">Hire (Accept)</option>
+                             <option value="REJECTED">Reject</option>
+                             <option value="INTERVIEW_SCHEDULED" disabled>Interview Scheduled</option>
+                           </select>
+                           
+                           {app.status !== 'INTERVIEW_SCHEDULED' && app.status !== 'REJECTED' && (
+                             <Button size="sm" onClick={() => openInterviewModal(app)}>
+                               Schedule Interview
+                             </Button>
+                           )}
+                           
+                           {app.status === 'REJECTED' && (
+                             <button
+                               onClick={() => {
+                                 setAppToDelete(app);
+                                 setIsDeleteModalOpen(true);
+                               }}
+                               className="p-2 ml-1 rounded-lg text-surface-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                               title="Delete Application"
+                             >
+                                <Trash2 className="w-4 h-4" />
+                             </button>
+                           )}
+                         </>
                        )}
                     </div>
                   </td>
@@ -240,6 +354,67 @@ export default function ApplicationManagerPage() {
                </Button>
             </div>
          </div>
+      </Modal>
+
+      {/* Fire Confirmation Modal */}
+      <Modal
+        isOpen={isFireModalOpen}
+        onClose={() => setIsFireModalOpen(false)}
+        title="Fire Employee"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 text-surface-300">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+              <UserX className="w-6 h-6 text-red-400" />
+            </div>
+            <p>
+              Are you sure you want to fire <strong className="text-surface-100">{appToFire?.candidateName}</strong>? This will permanently revoke their accepted status and reject their application.
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-surface-700/60">
+             <Button variant="ghost" onClick={() => setIsFireModalOpen(false)}>
+               Cancel
+             </Button>
+             <Button 
+               onClick={handleFireConfirm} 
+               className="bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+             >
+               Confirm & Fire
+             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Application"
+      >
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 text-surface-300">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+              <Trash2 className="w-6 h-6 text-red-400" />
+            </div>
+            <p>
+              Are you sure you want to permanently delete the application of <strong className="text-surface-100">{appToDelete?.candidateName}</strong>? This action cannot be undone.
+            </p>
+          </div>
+          
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-surface-700/60">
+             <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeleting}>
+               Cancel
+             </Button>
+             <Button 
+               onClick={handleDeleteConfirm} 
+               isLoading={isDeleting}
+               className="bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20"
+             >
+               Delete Application
+             </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

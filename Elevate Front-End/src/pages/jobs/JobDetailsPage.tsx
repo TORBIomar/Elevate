@@ -8,6 +8,7 @@ import Modal from '../../components/ui/Modal';
 import FileUpload from '../../components/ui/FileUpload';
 import { useAuth } from '../../contexts/AuthContext';
 import { applicationService } from '../../services/applicationService';
+import { savedJobsService } from '../../services/savedJobsService';
 import {
   MapPin,
   Banknote,
@@ -18,6 +19,7 @@ import {
   Send,
   Calendar,
   Building2,
+  Bookmark,
 } from 'lucide-react';
 
 function formatJobType(type: string): string {
@@ -62,6 +64,9 @@ export default function JobDetailsPage() {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const [applyError, setApplyError] = useState('');
+  const [hasApplied, setHasApplied] = useState(false);
+  const [isCheckingApplication, setIsCheckingApplication] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -77,7 +82,35 @@ export default function JobDetailsPage() {
       }
     };
     fetchJob();
+    setIsSaved(savedJobsService.isJobSaved(Number(id)));
   }, [id]);
+
+  useEffect(() => {
+    if (!user || user.role !== 'CANDIDATE' || !id) return;
+    const checkApplicationStatus = async () => {
+      setIsCheckingApplication(true);
+      try {
+        const alreadyApplied = await applicationService.checkApplicationStatus(Number(id));
+        setHasApplied(alreadyApplied);
+      } catch (err) {
+        console.error('Failed to check application status', err);
+      } finally {
+        setIsCheckingApplication(false);
+      }
+    };
+    checkApplicationStatus();
+  }, [user, id]);
+
+  const toggleSaveJob = () => {
+    if (!job) return;
+    if (isSaved) {
+      savedJobsService.removeJob(job.id);
+      setIsSaved(false);
+    } else {
+      savedJobsService.saveJob(job);
+      setIsSaved(true);
+    }
+  };
 
   const handleApply = async () => {
     if (!cvFile || !job) {
@@ -141,8 +174,21 @@ export default function JobDetailsPage() {
                 {job.category}
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-surface-100 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-surface-100 mb-2 flex items-center gap-3">
               {job.title}
+              {user?.role === 'CANDIDATE' && (
+                <button
+                  onClick={toggleSaveJob}
+                  className={`p-2 rounded-full transition-all ${
+                    isSaved 
+                      ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.3)]' 
+                      : 'bg-surface-800 text-surface-400 hover:text-rose-400 hover:bg-rose-500/10'
+                  }`}
+                  title={isSaved ? "Remove from saved jobs" : "Save this job"}
+                >
+                  <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
+                </button>
+              )}
             </h1>
           </div>
           <div className="text-right shrink-0">
@@ -203,11 +249,12 @@ export default function JobDetailsPage() {
           {user?.role === 'CANDIDATE' ? (
             <Button
               size="lg"
-              icon={<Send className="w-4 h-4" />}
+              icon={!hasApplied && !isCheckingApplication ? <Send className="w-4 h-4" /> : undefined}
               className="shrink-0"
               onClick={() => setIsApplyModalOpen(true)}
+              disabled={hasApplied || isCheckingApplication}
             >
-              Apply Now
+              {isCheckingApplication ? 'Checking...' : hasApplied ? 'Already Applied' : 'Apply Now'}
             </Button>
           ) : !user ? (
             <Button

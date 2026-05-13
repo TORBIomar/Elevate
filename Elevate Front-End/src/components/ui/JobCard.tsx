@@ -1,5 +1,8 @@
-import { MapPin, Banknote, Clock, Tag } from 'lucide-react';
+import { MapPin, Banknote, Clock, Tag, Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { savedJobsService } from '../../services/savedJobsService';
 import type { JobOfferResponse } from '../../types';
 
 interface JobCardProps {
@@ -42,7 +45,24 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function JobCard({ job, index = 0 }: JobCardProps) {
+  const { user } = useAuth();
+  const [isSaved, setIsSaved] = useState(false);
   const typeStyle = typeColors[job.jobType] || typeColors.FULL_TIME;
+
+  useEffect(() => {
+    setIsSaved(savedJobsService.isJobSaved(job.id));
+  }, [job.id]);
+
+  const toggleSave = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to the job details page
+    if (isSaved) {
+      savedJobsService.removeJob(job.id);
+      setIsSaved(false);
+    } else {
+      savedJobsService.saveJob(job);
+      setIsSaved(true);
+    }
+  };
 
   return (
     <Link
@@ -63,9 +83,24 @@ export default function JobCard({ job, index = 0 }: JobCardProps) {
             <span className="truncate">{job.location}</span>
           </div>
         </div>
-        <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full border ${typeStyle}`}>
-          {formatJobType(job.jobType)}
-        </span>
+        <div className="flex items-center gap-2">
+          {user?.role === 'CANDIDATE' && (
+            <button
+              onClick={toggleSave}
+              className={`p-1.5 rounded-full transition-all shrink-0 ${
+                isSaved 
+                  ? 'bg-rose-500/20 text-rose-400 hover:bg-rose-500/30' 
+                  : 'text-surface-500 hover:text-rose-400 hover:bg-rose-500/10'
+              }`}
+              title={isSaved ? "Remove from saved jobs" : "Save this job"}
+            >
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+            </button>
+          )}
+          <span className={`shrink-0 text-xs font-semibold px-3 py-1 rounded-full border ${typeStyle}`}>
+            {formatJobType(job.jobType)}
+          </span>
+        </div>
       </div>
 
       {/* Description preview */}

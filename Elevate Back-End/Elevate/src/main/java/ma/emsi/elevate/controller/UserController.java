@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controleur REST du profil utilisateur.
+ */
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -24,7 +27,10 @@ public UserController(UserProfileService userProfileService) {
         this.userProfileService = userProfileService;
     }
 
-@GetMapping("/profile")
+    /**
+     * Recupere le profil de l'utilisateur connecte.
+     */
+    @GetMapping("/profile")
     public ResponseEntity<?> getProfile(Authentication authentication) {
         try {
             return ResponseEntity.ok(userProfileService.getProfileByEmail(authentication.getName()));
@@ -34,7 +40,10 @@ public UserController(UserProfileService userProfileService) {
         }
     }
 
-@GetMapping("/{id}")
+    /**
+     * Recupere un utilisateur par id.
+     */
+    @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(userProfileService.getUserById(id));
@@ -44,7 +53,10 @@ public UserController(UserProfileService userProfileService) {
         }
     }
 
-@PutMapping("/profile")
+    /**
+     * Met a jour le profil de l'utilisateur connecte.
+     */
+    @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(Authentication authentication,
                                            @RequestBody UpdateProfileRequest updateRequest) {
         try {

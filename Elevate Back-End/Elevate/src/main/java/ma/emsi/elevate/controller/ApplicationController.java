@@ -13,6 +13,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * Controleur REST pour la gestion des candidatures.
+ */
 @RestController
 @RequestMapping("/api/applications")
 @RequiredArgsConstructor
@@ -20,7 +23,10 @@ public class ApplicationController {
 
 private final ApplicationService applicationService;
 
-@PostMapping("/{jobId}")
+    /**
+     * Candidature a une offre avec fichiers (CV/lettre).
+     */
+    @PostMapping("/{jobId}")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<ApplicationResponse> apply(
             @PathVariable Long jobId,
@@ -30,13 +36,19 @@ private final ApplicationService applicationService;
         return new ResponseEntity<>(applicationService.applyForJob(jobId, authentication.getName(), cv, coverLetter), HttpStatus.CREATED);
     }
 
-@GetMapping("/my-applications")
+    /**
+     * Liste les candidatures du candidat connecte (pagine).
+     */
+    @GetMapping("/my-applications")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<Page<ApplicationResponse>> getMyApplications(Authentication authentication, Pageable pageable) {
         return ResponseEntity.ok(applicationService.getMyApplications(authentication.getName(), pageable));
     }
 
-@GetMapping("/job/{jobId}")
+    /**
+     * Liste les candidatures recues pour une offre (recruteur).
+     */
+    @GetMapping("/job/{jobId}")
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<Page<ApplicationResponse>> getApplicationsForJob(
             @PathVariable Long jobId,
@@ -45,22 +57,16 @@ private final ApplicationService applicationService;
         return ResponseEntity.ok(applicationService.getApplicationsForJob(jobId, authentication.getName(), pageable));
     }
 
-@PatchMapping("/{applicationId}/status")
+    /**
+     * Met a jour le statut d'une candidature.
+     */
+    @PatchMapping("/{applicationId}/status")
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<ApplicationResponse> updateStatus(
             @PathVariable Long applicationId,
             @RequestParam ApplicationStatus status,
             Authentication authentication) {
         return ResponseEntity.ok(applicationService.updateApplicationStatus(applicationId, status, authentication.getName()));
-    }
-
-@DeleteMapping("/{applicationId}")
-    @PreAuthorize("hasAnyRole('CANDIDATE', 'RECRUITER')")
-    public ResponseEntity<Void> deleteApplication(
-            @PathVariable Long applicationId,
-            Authentication authentication) {
-        applicationService.deleteApplication(applicationId, authentication.getName());
-        return ResponseEntity.noContent().build();
     }
 }
 

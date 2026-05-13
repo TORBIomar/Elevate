@@ -12,6 +12,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service gérant la logique d'authentification et d'inscription.
+ * Fait le lien entre le contrôleur d'authentification, le gestionnaire de tokens (JwtUtil) et la base de données (UserService).
+ */
+/**
+ * Service d'authentification: inscription et login avec JWT.
+ */
 @Service
 public class AuthService {
 
@@ -33,7 +40,15 @@ public AuthService(AuthenticationManager authenticationManager,
         this.jwtUtil = jwtUtil;
     }
 
-public UserResponse register(RegisterRequest request) {
+    /**
+     * Traite l'inscription d'un nouvel utilisateur.
+     * @param request Objet contenant les informations du formulaire (email, mot de passe, etc.)
+     * @return Les données de l'utilisateur formatées pour la réponse API
+     */
+            /**
+             * Inscription d'un utilisateur.
+             */
+            public UserResponse register(RegisterRequest request) {
         User user = userService.registerUser(
                 request.getEmail(),
                 request.getPassword(),
@@ -45,16 +60,28 @@ public UserResponse register(RegisterRequest request) {
         return userMapper.toUserResponse(user);
     }
 
-public LoginResponse login(LoginRequest request) {
-        
+    /**
+     * Traite la connexion d'un utilisateur existant.
+     * @param request Objet contenant l'email et le mot de passe
+     * @return Les informations de connexion, incluant le token JWT
+     */
+            /**
+             * Authentifie l'utilisateur et retourne un token.
+             */
+            public LoginResponse login(LoginRequest request) {
+
+        // 1. Vérification des identifiants via Spring Security
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
+        // 2. Si succès, récupération des détails de l'utilisateur
         User user = (User) authentication.getPrincipal();
         
+        // 3. Génération du token JWT
         String token = jwtUtil.generateToken(user);
         
+        // 4. Mise à jour de la date de dernière connexion
         userService.updateLastLogin(user);
 
         return LoginResponse.builder()

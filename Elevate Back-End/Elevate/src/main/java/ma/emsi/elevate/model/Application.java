@@ -7,6 +7,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/*
+ * - Cette entité JPA utilise des annotations puissantes (@ManyToOne, @OneToMany) pour lier automatiquement les tables en base de données.
+ * - En JEE classique avec JDBC, il faudrait écrire manuellement de longues requêtes SQL avec des clauses JOIN complexes pour récupérer les relations.
+ * - JPA mappe directement les résultats SQL en objets Java (ORM) de manière transparente et maintient les clés étrangères sans code supplémentaire.
+ */
+/**
+ * Entite Candidature liee a une offre et un candidat.
+ */
 @Entity
 @Table(name = "applications")
 @Data

@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controleur REST pour le tableau de bord recruteur.
+ */
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -28,7 +31,10 @@ private final InterviewRepository interviewRepository;
 
 private final UserRepository userRepository;
 
-@GetMapping("/recruiter/stats")
+    /**
+     * Statistiques globales du recruteur connecte.
+     */
+    @GetMapping("/recruiter/stats")
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<RecruiterStatsResponse> getRecruiterStats(Authentication authentication) {
         

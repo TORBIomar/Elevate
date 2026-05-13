@@ -13,6 +13,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service gérant la logique métier des offres d'emploi (JobOffers).
+ * Utilise @Transactional pour garantir que toutes les opérations sur la base de données 
+ * s'exécutent de manière sûre et atomique.
+ */
+/**
+ * Logique metier des offres d'emploi.
+ */
 @Service
 @Transactional
 public class JobOfferServiceImpl implements JobOfferService {
@@ -26,7 +34,13 @@ public class JobOfferServiceImpl implements JobOfferService {
     @Autowired
     private JobOfferMapper jobOfferMapper;
 
-@Override
+    /**
+     * Crée une nouvelle offre d'emploi et l'associe au recruteur actuellement connecté.
+     */
+            /**
+             * Cree une offre pour un recruteur.
+             */
+            @Override
     public JobOfferResponse createJobOffer(JobOfferRequest request, String recruiterEmail) {
         User recruiter = userRepository.findByEmail(recruiterEmail)
                 .orElseThrow(() -> new RuntimeException("Recruiter not found"));
@@ -38,11 +52,19 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(savedOffer);
     }
 
-@Override
+    /**
+     * Met à jour une offre existante.
+     * Vérifie d'abord que le recruteur qui tente la modification est bien le créateur de l'offre.
+     */
+            /**
+             * Met a jour une offre si le recruteur est proprietaire.
+             */
+            @Override
     public JobOfferResponse updateJobOffer(Long id, JobOfferRequest request, String recruiterEmail) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job offer not found"));
 
+        // Sécurité : On s'assure que c'est le bon recruteur
         if (!jobOffer.getRecruiter().getEmail().equals(recruiterEmail)) {
             throw new RuntimeException("You are not authorized to update this offer");
         }
@@ -57,7 +79,10 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(jobOfferRepository.save(jobOffer));
     }
 
-@Override
+    /**
+     * Supprime une offre si le recruteur est proprietaire.
+     */
+    @Override
     public void deleteJobOffer(Long id, String recruiterEmail) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Job offer not found"));
@@ -69,7 +94,10 @@ public class JobOfferServiceImpl implements JobOfferService {
         jobOfferRepository.delete(jobOffer);
     }
 
-@Override
+    /**
+     * Recupere une offre par id.
+     */
+    @Override
     @Transactional(readOnly = true)
     public JobOfferResponse getJobOfferById(Long id) {
         JobOffer jobOffer = jobOfferRepository.findById(id)
@@ -77,13 +105,19 @@ public class JobOfferServiceImpl implements JobOfferService {
         return jobOfferMapper.toResponse(jobOffer);
     }
 
-@Override
+    /**
+     * Recherche d'offres avec filtre et pagination.
+     */
+    @Override
     @Transactional(readOnly = true)
     public Page<JobOfferResponse> searchJobOffers(String keyword, String category, Pageable pageable) {
         return jobOfferRepository.searchOffers(keyword, category, pageable)
                 .map(jobOfferMapper::toResponse);
     }
 
+    /**
+     * Liste les offres d'un recruteur.
+     */
     @Override
     @Transactional(readOnly = true)
     public Page<JobOfferResponse> getJobOffersByRecruiter(Long recruiterId, Pageable pageable) {

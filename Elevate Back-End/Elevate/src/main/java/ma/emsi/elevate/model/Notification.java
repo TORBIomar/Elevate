@@ -6,6 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entite Notification utilisateur.
+ */
 @Entity
 @Table(name = "notifications")
 @Data

@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * Service central des utilisateurs et de l'integration Spring Security.
+ */
 @Service
 public class UserService implements UserDetailsService {
 
@@ -25,14 +28,20 @@ public UserService(UserRepository userRepository, PasswordEncoder passwordEncode
         this.passwordEncoder = passwordEncoder;
     }
 
-@Override
+    /**
+     * Charge un utilisateur par email pour Spring Security.
+     */
+    @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }
 
-@Transactional
+    /**
+     * Inscription d'un utilisateur avec hash du mot de passe.
+     */
+    @Transactional
     public User registerUser(String email, String password, String firstName, String lastName,
                              String phoneNumber, String roleStr) {
         if (userRepository.existsByEmail(email)) {
@@ -66,13 +75,19 @@ UserRole role = UserRole.valueOf(roleStr.toUpperCase());
         return userRepository.findById(id);
     }
 
-@Transactional
+    /**
+     * Met a jour la date de derniere connexion.
+     */
+    @Transactional
     public User updateLastLogin(User user) {
         user.setLastLogin(LocalDateTime.now());
         return userRepository.save(user);
     }
 
-@Transactional
+    /**
+     * Met a jour les champs du profil utilisateur.
+     */
+    @Transactional
     public User updateUserProfile(Long userId, String firstName, String lastName,
                                   String phoneNumber, String profilePictureUrl) {
         User user = userRepository.findById(userId)
@@ -94,7 +109,10 @@ UserRole role = UserRole.valueOf(roleStr.toUpperCase());
         return userRepository.save(user);
     }
 
-@Transactional
+    /**
+     * Desactive un utilisateur.
+     */
+    @Transactional
     public User deactivateUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -102,7 +120,10 @@ UserRole role = UserRole.valueOf(roleStr.toUpperCase());
         return userRepository.save(user);
     }
 
-@Transactional
+    /**
+     * Reactive un utilisateur.
+     */
+    @Transactional
     public User activateUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

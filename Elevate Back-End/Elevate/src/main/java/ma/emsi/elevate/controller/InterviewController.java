@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controleur REST des entretiens.
+ */
 @RestController
 @RequestMapping("/api/interviews")
 @RequiredArgsConstructor
@@ -21,18 +24,27 @@ public class InterviewController {
 
 private final InterviewService interviewService;
 
-@PostMapping
+    /**
+     * Planifie un entretien (recruteur).
+     */
+    @PostMapping
     @PreAuthorize("hasRole('RECRUITER')")
     public ResponseEntity<InterviewResponse> scheduleInterview(@Valid @RequestBody InterviewRequest request, Authentication authentication) {
         return new ResponseEntity<>(interviewService.scheduleInterview(request, authentication.getName()), HttpStatus.CREATED);
     }
 
-@GetMapping
+    /**
+     * Liste les entretiens de l'utilisateur connecte.
+     */
+    @GetMapping
     public ResponseEntity<List<InterviewResponse>> getMyInterviews(Authentication authentication) {
         return ResponseEntity.ok(interviewService.getMyInterviews(authentication.getName()));
     }
 
-@PatchMapping("/{interviewId}/status")
+    /**
+     * Met a jour le statut d'un entretien.
+     */
+    @PatchMapping("/{interviewId}/status")
     public ResponseEntity<InterviewResponse> updateStatus(
             @PathVariable Long interviewId,
             @RequestParam InterviewStatus status,

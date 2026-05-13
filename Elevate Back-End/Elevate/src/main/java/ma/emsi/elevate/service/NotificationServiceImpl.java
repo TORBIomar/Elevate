@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Logique metier des notifications utilisateur.
+ */
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
@@ -18,6 +21,9 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
 
+    /**
+     * Cree une notification pour un utilisateur.
+     */
     @Override
     public void createNotification(Long userId, String message) {
         User user = userRepository.findById(userId).orElseThrow();
@@ -29,6 +35,9 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.save(notification);
     }
 
+    /**
+     * Retourne les notifications du user connecte.
+     */
     @Override
     public List<NotificationResponse> getMyNotifications(String username) {
         User user = userRepository.findByEmail(username).orElseThrow();
@@ -37,6 +46,9 @@ public class NotificationServiceImpl implements NotificationService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Marque une notification comme lue si elle appartient au user.
+     */
     @Override
     public void markAsRead(Long notificationId, String username) {
         Notification notification = notificationRepository.findById(notificationId).orElseThrow();
@@ -48,6 +60,9 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    /**
+     * Convertit l'entite Notification en DTO de reponse.
+     */
     private NotificationResponse mapToResponse(Notification notification) {
         return NotificationResponse.builder()
                 .id(notification.getId())

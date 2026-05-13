@@ -22,6 +22,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+/*
+ * - Ce service délègue toutes ses opérations CRUD à Spring Data JPA (via les Repositories injectés).
+ * - En JEE classique, l'implémentation d'un service similaire nécessiterait la création manuelle de requêtes SQL brutes (JDBC) ou la manipulation fastidieuse de l'EntityManager.
+ * - Il faudrait également gérer manuellement les objets Connection, les blocs try-catch-finally, et les transactions manuelles, là où Spring gère tout cela implicitement (ou via @Transactional).
+ */
+/**
+ * Logique metier des candidatures (creation, listing, statut).
+ */
 @Service
 @RequiredArgsConstructor
 public class ApplicationServiceImpl implements ApplicationService {
@@ -33,7 +41,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private final String UPLOAD_DIR = "uploads/";
 
-@Override
+    /**
+     * Cree une candidature et sauvegarde les fichiers.
+     */
+    @Override
     public ApplicationResponse applyForJob(Long jobId, String username, MultipartFile cv, MultipartFile coverLetter) {
         User candidate = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -56,7 +67,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         return mapToResponse(saved);
     }
 
-@Override
+    /**
+     * Liste les candidatures du candidat connecte.
+     */
+    @Override
     public Page<ApplicationResponse> getMyApplications(String username, Pageable pageable) {
         User candidate = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -64,7 +78,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .map(this::mapToResponse);
     }
 
-@Override
+    /**
+     * Liste les candidatures recues pour une offre du recruteur.
+     */
+    @Override
     public Page<ApplicationResponse> getApplicationsForJob(Long jobId, String username, Pageable pageable) {
         User recruiter = userRepository.findByEmail(username).orElseThrow();
         JobOffer jobOffer = jobOfferRepository.findById(jobId).orElseThrow();
@@ -76,7 +93,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationRepository.findByJobOfferId(jobId, pageable).map(this::mapToResponse);
     }
 
-@Override
+    /**
+     * Met a jour le statut d'une candidature et notifie le candidat.
+     */
+    @Override
     public ApplicationResponse updateApplicationStatus(Long applicationId, ApplicationStatus status, String username) {
         Application app = applicationRepository.findById(applicationId).orElseThrow();
         User recruiter = userRepository.findByEmail(username).orElseThrow();
@@ -94,6 +114,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         return mapToResponse(saved);
     }
 
+    /**
+     * Sauvegarde un fichier dans le dossier local d'upload.
+     */
     private String saveFile(MultipartFile file) {
         try {
             File dir = new File(UPLOAD_DIR);
@@ -107,6 +130,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
+    /**
+     * Convertit l'entite Application en DTO de reponse.
+     */
     private ApplicationResponse mapToResponse(Application app) {
         return ApplicationResponse.builder()
                 .id(app.getId())

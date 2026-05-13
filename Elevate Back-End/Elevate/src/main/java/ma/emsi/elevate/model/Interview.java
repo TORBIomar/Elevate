@@ -6,6 +6,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entite Entretien lie a une candidature.
+ */
 @Entity
 @Table(name = "interviews")
 @Data

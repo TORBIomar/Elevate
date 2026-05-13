@@ -5,6 +5,9 @@ import ma.emsi.elevate.model.Interview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
+/**
+ * Repository des entretiens.
+ */
 public interface InterviewRepository extends JpaRepository<Interview, Long> {
 
 List<Interview> findByApplication_Candidate_Id(Long candidateId);

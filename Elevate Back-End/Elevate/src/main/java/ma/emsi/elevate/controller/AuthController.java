@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controleur REST public pour l'authentification (inscription, connexion).
+ * Endpoints accessibles sans token JWT.
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -25,12 +29,18 @@ public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-@PostMapping("/register")
+    /**
+     * Inscription d'un nouvel utilisateur.
+     */
+    @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest registerRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(registerRequest));
     }
 
-@PostMapping("/login")
+    /**
+     * Connexion et generation du token JWT.
+     */
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         return ResponseEntity.ok(authService.login(loginRequest));
     }

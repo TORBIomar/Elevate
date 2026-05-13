@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entite Offre d'emploi.
+ */
 @Entity
 @Table(name = "job_offers")
 @Data

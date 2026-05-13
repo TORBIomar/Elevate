@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Entite utilisateur (candidat, recruteur, admin).
+ */
 @Entity
 @Table(name = "users")
 @Data
@@ -62,7 +65,10 @@ public class User implements UserDetails {
 @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-@Override
+    /**
+     * Convertit le role en autorite Spring Security.
+     */
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
@@ -92,13 +98,19 @@ public class User implements UserDetails {
         return isActive;
     }
 
-@PrePersist
+    /**
+     * Initialise les dates a la creation.
+     */
+    @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
-@PreUpdate
+    /**
+     * Met a jour la date de modification.
+     */
+    @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }

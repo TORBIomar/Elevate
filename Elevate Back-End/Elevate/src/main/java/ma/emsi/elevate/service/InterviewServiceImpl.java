@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Logique metier des entretiens.
+ */
 @Service
 @RequiredArgsConstructor
 public class InterviewServiceImpl implements InterviewService {
@@ -26,6 +29,9 @@ public class InterviewServiceImpl implements InterviewService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    /**
+     * Planifie un entretien et met a jour le statut de la candidature.
+     */
     @Override
     public InterviewResponse scheduleInterview(InterviewRequest request, String username) {
         User recruiter = userRepository.findByEmail(username).orElseThrow();
@@ -53,6 +59,9 @@ public class InterviewServiceImpl implements InterviewService {
         return mapToResponse(interviewRepository.save(interview));
     }
 
+    /**
+     * Liste les entretiens associes a l'utilisateur connecte.
+     */
     @Override
     public List<InterviewResponse> getMyInterviews(String username) {
         User user = userRepository.findByEmail(username).orElseThrow();
@@ -65,6 +74,9 @@ public class InterviewServiceImpl implements InterviewService {
         }
     }
 
+    /**
+     * Met a jour le statut d'un entretien et notifie le candidat.
+     */
     @Override
     public InterviewResponse updateInterviewStatus(Long interviewId, InterviewStatus status, String username) {
         Interview interview = interviewRepository.findById(interviewId).orElseThrow();
@@ -78,6 +90,9 @@ public class InterviewServiceImpl implements InterviewService {
         return mapToResponse(interviewRepository.save(interview));
     }
 
+    /**
+     * Convertit l'entite Interview en DTO de reponse.
+     */
     private InterviewResponse mapToResponse(Interview i) {
         return InterviewResponse.builder()
                 .id(i.getId())

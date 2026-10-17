@@ -1,46 +1,72 @@
-# Elevate Recruitment Platform 🚀
+# 🚀 Elevate — Next-Generation Recruitment & ATS Platform
 
-Elevate is a comprehensive full-stack recruitment platform designed to streamline the hiring process. This repository contains both the frontend and backend components of the system.
+<div align="center">
 
-## 📂 Project Structure
+[![React 19](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot%203-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![MySQL](https://img.shields.io/badge/Database-MySQL%208-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-- **[Elevate Front-End](./Elevate%20Front-End)**: React 19 application built with Vite and Tailwind CSS.
-- **[Elevate Back-End](./Elevate%20Back-End)**: Java Spring Boot application (Maven) providing the REST API and data persistence.
-- **[elevate_db_setup.sql](./elevate_db_setup.sql)**: Database schema and initial setup script.
+<p align="center">
+  <b>Comprehensive full-stack recruitment platform and applicant tracking system (ATS).</b><br>
+  Bridges talent with hiring managers through an intuitive application pipeline, automated candidate scoring, and stage tracking.
+</p>
 
-## ✨ Core Features
-
-### 👤 Candidate Experience
-- Browse job opportunities on the **Job Board**.
-- Manage professional profile and resume.
-- Track application status and interviews.
-
-### 💼 Recruiter Tools
-- **Dashboard** with recruitment metrics.
-- Manage job offers and candidate pipelines.
-- Schedule and manage interviews.
-
-## 🚀 Getting Started
-
-### Backend Setup
-1. Navigate to `Elevate Back-End/Elevate`.
-2. Configure your database settings in `src/main/resources/application.properties`.
-3. Run the application using Maven:
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-
-### Frontend Setup
-1. Navigate to `Elevate Front-End`.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
+</div>
 
 ---
 
-Built with ❤️ by [TORBIomar](https://github.com/TORBIomar)
+## 🌟 Key Features
+
+### 👤 Candidate Portal
+- **Job Discovery**: Explore active job openings with tag filters, salary ranges, and remote options.
+- **Profile & Resume Builder**: Manage professional credentials, portfolio links, and uploaded CVs.
+- **Application Tracking**: Live status updates from application submission to interview offer.
+
+### 🏢 Recruiter Dashboard
+- **Kanban Pipeline**: Drag-and-drop candidates across stages (*Applied*, *Screening*, *Interview*, *Offer*, *Rejected*).
+- **Candidate Evaluation**: Score applicants, leave collaborative hiring notes, and schedule interview rounds.
+- **Database Architecture**: Clean normalized schema with initial seed script (`elevate_db_setup.sql`).
+
+---
+
+## 📂 Project Structure
+
+- **`Elevate Front-End/`**: React 19 single-page app built with Vite and Tailwind CSS.
+- **`Elevate Back-End/`**: Java Spring Boot application providing the RESTful API and security layer.
+- **`elevate_db_setup.sql`**: Production database schema and initial seed data.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Database Setup
+```bash
+mysql -u root -p < elevate_db_setup.sql
+```
+
+### 2. Backend API
+```bash
+cd "Elevate Back-End"
+mvn clean install
+mvn spring-boot:run
+```
+
+### 3. Frontend App
+```bash
+cd "Elevate Front-End"
+npm install
+npm run dev
+```
+
+Access the application at `http://localhost:5173`.
+
+---
+
+## 👨‍💻 Author
+
+**Omar Torbi** — Full-Stack Engineer & Software Architect
+- 🌐 **Portfolio**: [omartorbi.engineer](https://www.omartorbi.engineer)
+- 💼 **LinkedIn**: [linkedin.com/in/omar-torbi](https://www.linkedin.com/in/omar-torbi-b8340933a/)
+- 🐙 **GitHub**: [@TORBIomar](https://github.com/TORBIomar)
+- ✉️ **Email**: [torbi.dev@outlook.com](mailto:torbi.dev@outlook.com)
